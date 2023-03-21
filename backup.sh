@@ -21,30 +21,30 @@ if $DBDUMP_HOST ; then
   BACKUP_DIR="/backup"
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
-  echo "started" > ${BACKUP_DIR}/${TIMESTAMP}.state
+  echo "started" > ${BACKUP_DIR}/"${TIMESTAMP}".state
 
   echo "delete old backups"
-  find ${BACKUP_DIR} -maxdepth 2 -mtime +${KEEP_DAYS} -regex "^${BACKUP_DIR}/.*[0-9]*_.*\.sql\.gz$" -type f -exec rm {} \;
+  find ${BACKUP_DIR} -maxdepth 2 -mtime +"${KEEP_DAYS}" -regex "^${BACKUP_DIR}/.*[0-9]*_.*\.sql\.gz$" -type f -exec rm {} \;
 
   case $DBDUMP_TYPE in
 
     mysql)
       echo "test mysql connection"
-      if [ -z "$(mysql -h ${DBDUMP_HOST} -P ${DBDUMP_PORT} -u ${DBDUMP_USER} -B -N -e 'SHOW DATABASES;')" ]; then
+      if [ -z "$(mysql -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -B -N -e 'SHOW DATABASES;')" ]; then
         echo "mysql connection failed! exiting..."
         exit 1
       fi    
 
-      if $DBDUMP_DB && [[ "$DBDUMP_ALL_DATABASES" != "true" ]] ; then
+      if $DBDUMP_DB && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
         echo "Backing up single db ${DBDUMP_DB}"
         mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
-        mysqldump ${DBDUMP_OPTS} -h ${DBDUMP_HOST} -P ${DBDUMP_PORT} -u ${DBDUMP_USER} --databases ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
+        mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
         rc=$?
-      elif [ "$DBDUMP_ALL_DATABASES" = "true" ]
-        for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P ${DBDUMP_PORT} -u ${DBDUMP_USER} -B -N -e "SHOW DATABASES;"|egrep -v '^(information|performance)_schema$'); do
+      elif [ "$DBDUMP_ALL_DATABASES" = "true" ]; then
+        for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -B -N -e "SHOW DATABASES;"|grep -E -v '^(information|performance)_schema$'); do
           echo "Backing up db ${DBDUMP_DB}"
           mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
-          mysqldump ${DBDUMP_OPTS} -h ${DBDUMP_HOST} -P ${DBDUMP_PORT} -u ${DBDUMP_USER} --databases ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
+          mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
           rc=$?
         done
       fi
@@ -52,28 +52,28 @@ if $DBDUMP_HOST ; then
 
     postgresql)
       echo "test postgresql connection"
-      if [ -z "$(PGPASSWORD="$DBDUMP_PASSWORD" psql -h ${DBDUMP_HOST} -U ${DBDUMP_USER} -d ${DBDUMP_DB} -c '\l')" ]; then
+      if [ -z "$(PGPASSWORD="$DBDUMP_PASSWORD" psql -h "${DBDUMP_HOST}" -U "${DBDUMP_USER}" -d "${DBDUMP_DB}" -c '\l')" ]; then
         echo "postgres connection failed! exiting..."
         exit 1
       fi
 
-      if $DBDUMP_DB && [[ "$DBDUMP_ALL_DATABASES" != "true" ]] ; then
+      if $DBDUMP_DB && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
         echo "Backing up single db ${DBDUMP_DB}"
         mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
-        PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h ${DBDUMP_HOST} -p ${DBDUMP_PORT} -U ${DBDUMP_USER} -d ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
+        PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h "${DBDUMP_HOST}" -p "${DBDUMP_PORT}" -U "${DBDUMP_USER}" -d "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
         rc=$?
-      elif [ "$DBDUMP_ALL_DATABASES" = "true" ]
-        for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P ${DBDUMP_PORT} -u ${DBDUMP_USER} -B -N -e "SHOW DATABASES;"|egrep -v '^(information|performance)_schema$'); do
+      elif [ "$DBDUMP_ALL_DATABASES" = "true" ] ; then
+        for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -B -N -e "SHOW DATABASES;"|grep -E -v '^(information|performance)_schema$'); do
           echo "Backing up db ${DBDUMP_DB}"
           mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
-          PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h ${DBDUMP_HOST} -p ${DBDUMP_PORT} -U ${DBDUMP_USER} -d ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
+          PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h "${DBDUMP_HOST}" -p "${DBDUMP_PORT}" -U "${DBDUMP_USER}" -d "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
           rc=$?
         done
       fi
       ;;
 
     *)
-      echo -n "must set database type"
+      echo "must set database type"
       ;;
   esac
 
@@ -87,7 +87,7 @@ if $DBDUMP_HOST ; then
     ls -lahR ${BACKUP_DIR}
   fi
 
-  echo "complete" > ${BACKUP_DIR}/${TIMESTAMP}.state
+  echo "complete" > ${BACKUP_DIR}/"${TIMESTAMP}".state
 
   echo "Disk usage in ${BACKUP_DIR}"
   du -h -d 2 ${BACKUP_DIR}
