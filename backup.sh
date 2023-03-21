@@ -23,7 +23,7 @@ BACKUP_DIR="/backup"
 TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
 echo "test mysql connection"
-if [ -z "$(mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -B -N -e 'SHOW DATABASES;')" ]; then
+if [ -z "$(mysql -h ${DBDUMP_HOST} -P ${DBDUMP_PORT} -u ${DBDUMP_USER} -B -N -e 'SHOW DATABASES;')" ]; then
   echo "mysql connection failed! exiting..."
   exit 1
 fi
@@ -34,17 +34,17 @@ echo "delete old backups"
 find ${BACKUP_DIR} -maxdepth 2 -mtime +${KEEP_DAYS} -regex "^${BACKUP_DIR}/.*[0-9]*_.*\.sql\.gz$" -type f -exec rm {} \;
 
 if $DBDUMP_DB && [[ "$DBDUMP_ALL_DATABASES" != "true" ]] ; then
-  echo "Backing up single db ${MYSQL_DB}"
-  mkdir -p "${BACKUP_DIR}"/"${MYSQL_DB}"
-  mysqldump ${MYSQL_OPTS} -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} --databases ${MYSQL_DB} | gzip > ${BACKUP_DIR}/${MYSQL_DB}/${TIMESTAMP}_${MYSQL_DB}.sql.gz
+  echo "Backing up single db ${DBDUMP_DB}"
+  mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
+  mysqldump ${DBDUMP_OPTS} -h ${DBDUMP_HOST} -P ${DBDUMP_PORT} -u ${DBDUMP_USER} --databases ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
   rc=$?
 
 elif [ "$DBDUMP_ALL_DATABASES" = "true" ]
 
-  for MYSQL_DB in $(mysql -h "${MYSQL_HOST}" -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -B -N -e "SHOW DATABASES;"|egrep -v '^(information|performance)_schema$'); do
-    echo "Backing up db ${MYSQL_DB}"
-    mkdir -p "${BACKUP_DIR}"/"${MYSQL_DB}"
-    mysqldump ${MYSQL_OPTS} -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} --databases ${MYSQL_DB} | gzip > ${BACKUP_DIR}/${MYSQL_DB}/${TIMESTAMP}_${MYSQL_DB}.sql.gz
+  for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P ${DBDUMP_PORT} -u ${DBDUMP_USER} -B -N -e "SHOW DATABASES;"|egrep -v '^(information|performance)_schema$'); do
+    echo "Backing up db ${DBDUMP_DB}"
+    mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
+    mysqldump ${DBDUMP_OPTS} -h ${DBDUMP_HOST} -P ${DBDUMP_PORT} -u ${DBDUMP_USER} --databases ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
     rc=$?
   done
 fi
