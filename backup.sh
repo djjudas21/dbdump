@@ -51,7 +51,25 @@ if $DBDUMP_HOST ; then
       ;;
 
     postgresql)
-      echo -n "Romanian"
+      echo "test postgresql connection"
+      if [ -z "$(PGPASSWORD="$DBDUMP_PASSWORD" psql -h ${DBDUMP_HOST} -U ${DBDUMP_USER} -d ${DBDUMP_DB} -c '\l')" ]; then
+        echo "postgres connection failed! exiting..."
+        exit 1
+      fi
+
+      if $DBDUMP_DB && [[ "$DBDUMP_ALL_DATABASES" != "true" ]] ; then
+        echo "Backing up single db ${DBDUMP_DB}"
+        mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
+        PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h ${DBDUMP_HOST} -p ${DBDUMP_PORT} -U ${DBDUMP_USER} -d ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
+        rc=$?
+      elif [ "$DBDUMP_ALL_DATABASES" = "true" ]
+        for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P ${DBDUMP_PORT} -u ${DBDUMP_USER} -B -N -e "SHOW DATABASES;"|egrep -v '^(information|performance)_schema$'); do
+          echo "Backing up db ${DBDUMP_DB}"
+          mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
+          PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h ${DBDUMP_HOST} -p ${DBDUMP_PORT} -U ${DBDUMP_USER} -d ${DBDUMP_DB} | gzip > ${BACKUP_DIR}/${DBDUMP_DB}/${TIMESTAMP}_${DBDUMP_DB}.sql.gz
+          rc=$?
+        done
+      fi
       ;;
 
     *)
