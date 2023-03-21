@@ -48,40 +48,9 @@ mysqldump ${MYSQL_OPTS} -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -
 rc=$?
 {{- end -}}
 
-{{- if or (.Values.upload.googlestoragebucket.enabled) (.Values.upload.ssh.enabled) (.Values.upload.openstack.enabled) -}}
-{{ if .Values.upload.ssh.enabled -}}
-echo "upload files via ssh to {{ .Values.upload.ssh.user }}@{{ .Values.upload.ssh.host }}:{{ .Values.upload.ssh.dir }}"
-rsync -av --delete --exclude=*.state -e 'ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null' ${BACKUP_DIR}/ {{ .Values.upload.ssh.user }}@{{ .Values.upload.ssh.host }}:{{ .Values.upload.ssh.dir }}
-rcu=$?
-{{ end -}}
-
-{{ if .Values.upload.googlestoragebucket.enabled -}}
-echo "upload files to google storage bucket {{ .Values.upload.googlestoragebucket.bucketname }}"
-gcloud auth activate-service-account --key-file /root/gcloud/{{ .Values.upload.googlestoragebucket.secretFileName }}
-gsutil -m rsync -r -x '.*\.state' -d ${BACKUP_DIR}/ {{ .Values.upload.googlestoragebucket.bucketname }}
-rcu=$?
-{{ end }}
-
-{{ if .Values.upload.openstack.enabled -}}
-echo "upload files to openstack at {{ .Values.upload.openstack.destination }}"
-python /scripts/openstack-upload.py \
-  --source=${BACKUP_DIR} \
-  --destination={{ .Values.upload.openstack.destination }} \
-  {{ if .Values.upload.openstack.ttlDays -}} --ttl-days={{ .Values.upload.openstack.ttlDays }} {{- end }} \
-  {{ if .Values.debug -}} --verbose {{- end }}
-rcu=$?
-{{ end }}
-
-if [ "$rcu" != "0" ]; then
-  echo "upload failed"
-  exit 1
-fi
-
-{{- else  }}
 {{ if .Values.dumpAllToStdout }}
 mysqldump ${MYSQL_OPTS} -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} --all-databases
 rc=$?
-{{ end }}
 {{ end }}
 
 {{ if .Values.debug }}
