@@ -6,3 +6,5 @@ RUN apk add --update-cache \
   && rm -rf /var/cache/apk/*
 
 COPY dbdump.sh /
+
+ENTRYPOINT ["/bin/ash", "/dbdump.sh"]
