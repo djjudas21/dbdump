@@ -57,7 +57,7 @@ if [ "$DBDUMP_HOST" ] ; then
         exit 1
       fi
 
-      if $DBDUMP_DB && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
+      if [ "$DBDUMP_DB" ] && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
         echo "Backing up single db ${DBDUMP_DB}"
         mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
         PGPASSWORD="$DBDUMP_PASSWORD" pg_dump -h "${DBDUMP_HOST}" -p "${DBDUMP_PORT}" -U "${DBDUMP_USER}" -d "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
