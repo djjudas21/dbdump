@@ -16,7 +16,7 @@ if [ "$DBDUMP_DEBUG" = true ] ; then
   set -ex
 fi
 
-if $DBDUMP_HOST ; then
+if [ "$DBDUMP_HOST" ] ; then
 
   BACKUP_DIR="/backup"
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
