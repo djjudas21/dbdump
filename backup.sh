@@ -38,13 +38,13 @@ if [ "$DBDUMP_HOST" ] ; then
       if $DBDUMP_DB && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
         echo "Backing up single db ${DBDUMP_DB}"
         mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
-        mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
+        mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -p"${DBDUMP_PASSWORD}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
         rc=$?
       elif [ "$DBDUMP_ALL_DATABASES" = "true" ]; then
         for DBDUMP_DB in $(mysql -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -B -N -e "SHOW DATABASES;"|grep -E -v '^(information|performance)_schema$'); do
           echo "Backing up db ${DBDUMP_DB}"
           mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
-          mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
+          mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -p"${DBDUMP_PASSWORD}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
           rc=$?
         done
       fi
