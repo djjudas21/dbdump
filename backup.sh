@@ -35,7 +35,7 @@ if [ "$DBDUMP_HOST" ] ; then
         exit 1
       fi    
 
-      if $DBDUMP_DB && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
+      if [ "$DBDUMP_DB" ] && [ "$DBDUMP_ALL_DATABASES" != "true" ] ; then
         echo "Backing up single db ${DBDUMP_DB}"
         mkdir -p "${BACKUP_DIR}"/"${DBDUMP_DB}"
         mysqldump "${DBDUMP_OPTS}" -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -p"${DBDUMP_PASSWORD}" --databases "${DBDUMP_DB}" | gzip > "${BACKUP_DIR}"/"${DBDUMP_DB}"/"${TIMESTAMP}"_"${DBDUMP_DB}".sql.gz
