@@ -19,6 +19,7 @@ fi
 if [ "$DBDUMP_HOST" ] ; then
 
   BACKUP_DIR="/backup/${DBDUMP_HOST}"
+  mkdir -p "${BACKUP_DIR}"
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
   echo "delete old backups"
