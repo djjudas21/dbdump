@@ -18,7 +18,7 @@ fi
 
 if [ "$DBDUMP_HOST" ] ; then
 
-  BACKUP_DIR="/backup"
+  BACKUP_DIR="/backup/${DBDUMP_HOST}"
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
   echo "started" > ${BACKUP_DIR}/"${TIMESTAMP}".state
