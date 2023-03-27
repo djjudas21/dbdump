@@ -30,7 +30,7 @@ if [ "$DBDUMP_HOST" ] ; then
 
     mysql)
       echo "test mysql connection"
-      if [ -z "$(mysql -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -B -N -e 'SHOW DATABASES;')" ]; then
+      if [ -z "$(mysql -h "${DBDUMP_HOST}" -P "${DBDUMP_PORT}" -u "${DBDUMP_USER}" -p"${DBDUMP_PASSWORD}" -B -N -e 'SHOW DATABASES;')" ]; then
         echo "mysql connection failed! exiting..."
         exit 1
       fi    
