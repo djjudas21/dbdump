@@ -5,4 +5,4 @@ RUN apk add --update-cache \
     postgresql-client \
   && rm -rf /var/cache/apk/*
 
-COPY backup.sh /
+COPY dbdump.sh /
