@@ -23,7 +23,7 @@ if [ "$DBDUMP_HOST" ] ; then
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
   echo "delete old backups"
-  find ${BACKUP_DIR} -maxdepth 2 -mtime +"${KEEP_DAYS}" -regex "^${BACKUP_DIR}/.*[0-9]*_.*\.sql\.gz$" -type f -exec rm {} \;
+  find "${BACKUP_DIR}" -maxdepth 2 -mtime +"${KEEP_DAYS}" -regex "^${BACKUP_DIR}/.*[0-9]*_.*\.sql\.gz$" -type f -exec rm {} \;
 
   case $DBDUMP_TYPE in
 
@@ -82,12 +82,12 @@ if [ "$DBDUMP_HOST" ] ; then
   fi
 
   if [ "$DBDUMP_DEBUG" = true ] ; then
-    echo Contents of ${BACKUP_DIR}
-    ls -lahR ${BACKUP_DIR}
+    echo "Contents of ${BACKUP_DIR}"
+    ls -lahR "${BACKUP_DIR}"
   fi
 
   echo "Disk usage in ${BACKUP_DIR}"
-  du -h -d 2 ${BACKUP_DIR}
+  du -h -d 2 "${BACKUP_DIR}"
 
   echo "Backup successful! :-)"
 else
